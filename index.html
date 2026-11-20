@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Шилов Медиа — вайбкодинг и нейросети под ключ | Подмосковье</title>
+<meta name="description" content="Разработка сайтов, телеграм-ботов и интеграция нейросетей под ключ. Без бюрократии и раздутых смет. 25 лет в IT. Подмосковье.">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; }
+  body {
+    font-family: Tahoma, Verdana, Arial, sans-serif;
+    font-size:14px;
+    line-height:1.55;
+    color:#1c1c1c;
+    background:#e8ecf1;
+    background-image:
+      linear-gradient(#f5f7fa 1px, transparent 1px),
+      linear-gradient(90deg, #f5f7fa 1px, transparent 1px);
+    background-size: 40px 40px, 40px 40px;
+    background-position: 0 0, 0 0;
+  }
+  a { color:#1a4c8f; text-decoration:underline; }
+  a:hover { color:#c0392b; }
+  .wrap { max-width:1000px; margin:0 auto; padding:0 12px; }
+
+  /* Topbar */
+  .topbar {
+    background:#0b2a5b;
+    color:#c8d6ea;
+    font-size:12px;
+    padding:5px 0;
+    border-bottom:2px solid #061a3a;
+  }
+  .topbar .wrap { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+  .topbar a { color:#ffd86b; text-decoration:none; }
+  .topbar a:hover { text-decoration:underline; }
+  .topbar .status { color:#7dd97d; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(#ffffff 0%, #dfe6ef 100%);
+    border-bottom:3px solid #0b2a5b;
+    padding:16px 0;
+  }
+  .header .wrap { display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .logo {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size:34px;
+    font-weight:bold;
+    color:#0b2a5b;
+    letter-spacing:-1px;
+    line-height:1;
+  }
+  .logo .dot { color:#c0392b; }
+  .logo-sub {
+    font-size:12px;
+    color:#556;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    margin-top:4px;
+    font-family: Tahoma, sans-serif;
+  }
+  .header-contact { margin-left:auto; text-align:right; font-size:13px; }
+  .header-contact .phone { font-size:18px; font-weight:bold; color:#0b2a5b; }
+  .header-contact .phone a { color:inherit; text-decoration:none; }
+
+  /* Nav */
+  .nav {
+    background:#2b4a7a;
+    border-bottom:3px solid #061a3a;
+  }
+  .nav .wrap { display:flex; flex-wrap:wrap; }
+  .nav a {
+    color:#ffffff;
+    text-decoration:none;
+    padding:10px 16px;
+    font-size:13px;
+    font-weight:bold;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    border-right:1px solid #1a3a66;
+  }
+  .nav a:hover { background:#0b2a5b; color:#ffd86b; }
+
+  /* Layout */
+  .layout {
+    display:flex;
+    gap:16px;
+    margin-top:16px;
+    margin-bottom:16px;
+    align-items:flex-start;
+  }
+  .main { flex:1; min-width:0; }
+  .side { width:280px; flex-shrink:0; }
+
+  /* Cards / boxes */
+  .box {
+    background:#fff;
+    border:1px solid #b8c4d4;
+    margin-bottom:16px;
+    box-shadow:0 1px 0 #fff inset, 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .box-head {
+    background: linear-gradient(#f5f7fa 0%, #dfe6ef 100%);
+    border-bottom:1px solid #b8c4d4;
+    padding:8px 14px;
+    font-size:14px;
+    font-weight:bold;
+    color:#0b2a5b;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .box-head .badge {
+    background:#c0392b; color:#fff; font-size:10px;
+    padding:2px 7px; border-radius:2px;
+    letter-spacing:1px;
+    font-weight:bold;
+    text-transform:uppercase;
+  }
+  .box-body { padding:14px 16px; }
+  .box-body p:first-child { margin-top:0; }
+  .box-body p:last-child { margin-bottom:0; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #0b2a5b 0%, #1a4c8f 100%);
+    color:#e8eef8;
+    padding:26px 22px;
+    border:1px solid #061a3a;
+    margin-bottom:16px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after {
+    content:"";
+    position:absolute; right:-40px; top:-40px; width:200px; height:200px;
+    background: radial-gradient(circle, rgba(255,216,107,0.15) 0%, transparent 70%);
+    border-radius:50%;
+  }
+  .hero h1 {
+    margin:0 0 8px 0;
+    font-family: Georgia, serif;
+    font-size:26px;
+    font-weight:normal;
+    color:#ffffff;
+    line-height:1.25;
+    letter-spacing:-0.3px;
+  }
+  .hero p { margin:0 0 14px 0; font-size:14px; color:#c8d6ea; max-width:640px; }
+  .hero .cta {
+    display:inline-block;
+    background:#ffd86b;
+    color:#0b2a5b;
+    padding:9px 20px;
+    font-weight:bold;
+    text-decoration:none;
+    border:1px solid #b8922e;
+    border-radius:2px;
+    font-size:13px;
+  }
+  .hero .cta:hover { background:#ffc933; }
+
+  /* Services */
+  .svc-grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  .svc {
+    border:1px solid #d5dbe4;
+    background:#fafbfd;
+    padding:12px 14px;
+  }
+  .svc h4 { margin:0 0 6px 0; font-size:14px; color:#0b2a5b; }
+  .svc p { margin:0; font-size:13px; color:#444; }
+  .svc ul { margin:6px 0 0 0; padding-left:18px; font-size:13px; color:#333; }
+  .svc ul li { margin-bottom:2px; }
+
+  /* Prices */
+  table.prices { width:100%; border-collapse:collapse; font-size:13px; }
+  table.prices th {
+    background:#eef1f6; text-align:left; padding:8px 10px;
+    border:1px solid #cfd6e0; font-weight:bold; color:#0b2a5b;
+    font-size:12px; text-transform:uppercase; letter-spacing:0.5px;
+  }
+  table.prices td { padding:8px 10px; border:1px solid #dde2ea; }
+  table.prices tr:nth-child(even) td { background:#f8f9fb; }
+  table.prices td.price { text-align:right; white-space:nowrap; font-weight:bold; color:#1c1c1c; }
+  .price-note { font-size:12px; color:#666; margin-top:8px; }
+
+  /* Portfolio */
+  .port-item {
+    padding:10px 0;
+    border-bottom:1px dashed #d5dbe4;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .port-item:last-child { border-bottom:0; padding-bottom:0; }
+  .port-icon {
+    width:48px; height:48px; flex-shrink:0;
+    background:#0b2a5b; color:#ffd86b;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:bold; font-size:12px;
+    border-radius:3px;
+    font-family: Georgia, serif;
+  }
+  .port-body h5 { margin:0 0 3px 0; font-size:14px; color:#0b2a5b; }
+  .port-body p { margin:0; font-size:13px; color:#444; }
+  .port-body .meta { font-size:11px; color:#888; margin-top:4px; }
+
+  /* About */
+  .about-text p { margin:0 0 10px 0; font-size:14px; }
+  .about-facts {
+    display:grid; grid-template-columns:repeat(3, 1fr);
+    gap:10px; margin-top:14px;
+  }
+  .fact {
+    background:#f5f7fa; border:1px solid #d5dbe4;
+    padding:10px 12px; text-align:center;
+  }
+  .fact .num { font-size:20px; font-weight:bold; color:#0b2a5b; font-family:Georgia, serif; }
+  .fact .lbl { font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+  /* Sidebar */
+  .side .box-head { background: linear-gradient(#f5f7fa 0%, #dfe6ef 100%); }
+  .tg-card {
+    background:#229ED9;
+    color:#fff;
+    padding:16px;
+    text-align:center;
+    border-radius:2px;
+  }
+  .tg-card h3 { margin:0 0 4px 0; font-size:15px; }
+  .tg-card p { margin:0 0 12px 0; font-size:12px; opacity:0.9; }
+  .tg-btn {
+    display:block;
+    background:#ffffff;
+    color:#229ED9;
+    text-decoration:none;
+    padding:9px 14px;
+    font-weight:bold;
+    border-radius:3px;
+    font-size:13px;
+  }
+  .tg-btn:hover { background:#ffd86b; color:#0b2a5b; }
+
+  .contacts-list { font-size:13px; }
+  .contacts-list div { padding:6px 0; border-bottom:1px dotted #d5dbe4; }
+  .contacts-list div:last-child { border-bottom:0; }
+  .contacts-list .lbl { color:#888; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+  .contacts-list .val { color:#1c1c1c; font-weight:bold; }
+
+  /* Mini marquee (easter egg) */
+  .mini-news {
+    background:#fff8e0;
+    border:1px solid #e0c570;
+    padding:6px 0;
+    overflow:hidden;
+    white-space:nowrap;
+    font-size:12px;
+    color:#664d00;
+    margin-bottom:16px;
+  }
+  .mini-news-inner { display:inline-block; padding-left:100%; animation: scroll-left 40s linear infinite; }
+  .mini-news-inner span { margin-right:40px; }
+  @keyframes scroll-left { from { transform:translateX(0); } to { transform:translateX(-100%); } }
+  .mini-news-inner .tag {
+    background:#c0392b; color:#fff; padding:1px 6px;
+    font-size:10px; border-radius:2px; font-weight:bold;
+    letter-spacing:0.5px; margin-right:4px;
+  }
+
+  /* Footer */
+  .footer {
+    background:#0b2a5b;
+    color:#8ba2c2;
+    font-size:12px;
+    padding:18px 0;
+    margin-top:16px;
+    border-top:3px solid #061a3a;
+  }
+  .footer .wrap { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .footer a { color:#ffd86b; text-decoration:none; }
+  .footer a:hover { text-decoration:underline; }
+  .footer b { color:#ffffff; }
+
+  /* Utility */
+  .btn-small {
+    display:inline-block;
+    background: linear-gradient(#f5f7fa 0%, #dfe6ef 100%);
+    border:1px solid #b8c4d4;
+    color:#0b2a5b;
+    padding:5px 12px;
+    text-decoration:none;
+    font-size:12px;
+    font-weight:bold;
+    border-radius:2px;
+  }
+  .btn-small:hover { background: linear-gradient(#ffffff 0%, #eef1f6 100%); color:#c0392b; }
+
+  @media (max-width:780px) {
+    .layout { flex-direction:column; }
+    .side { width:100%; }
+    .svc-grid { grid-template-columns: 1fr; }
+    .about-facts { grid-template-columns: 1fr 1fr; }
+    .nav a { padding:8px 10px; font-size:12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="wrap">
+    <div>Подмосковье, работаю по всей России и на удалёнке</div>
+    <div><span class="status">● Принимаю заказы</span> · <a href="https://t.me/shilovmedia" target="_blank">@shilovmedia</a></div>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="wrap">
+    <div>
+      <div class="logo">ШИЛОВ<span class="dot">.</span>MEDIA</div>
+      <div class="logo-sub">Вайбкодинг · Нейросети · Телеграм-боты</div>
+    </div>
+    <div class="header-contact">
+      <div class="phone"><a href="https://t.me/shilovmedia" target="_blank">@shilovmedia</a></div>
+      <div style="color:#556;">Телеграм — самый быстрый способ связи</div>
+    </div>
+  </div>
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <div class="wrap">
+    <a href="#services">Услуги</a>
+    <a href="#prices">Цены</a>
+    <a href="#portfolio">Работы</a>
+    <a href="#about">Обо мне</a>
+    <a href="#contacts">Контакты</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Mini news marquee -->
+  <div class="mini-news" style="margin-top:14px;">
+    <div class="mini-news-inner">
+      <span><span class="tag">NEW</span> Свежий кейс: телеграм-бот с нейросетью для салона красоты в Мытищах</span>
+      <span><span class="tag">КЕЙС</span> MVP для стартапа доставки — от идеи до рабочего прототипа за 6 дней</span>
+      <span><span class="tag">СВОБОДНО</span> Открыт один слот на разработку в декабре</span>
+      <span><span class="tag">NEW</span> Разбор: как я автоматизировал обработку заявок с помощью ИИ и сэкономил клиенту 20 ч/нед</span>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Сайты и телеграм-боты с нейросетями — под ключ, без бюрократии и раздутых смет</h1>
+    <p>Мне 50 лет, я из Подмосковья, в IT больше 25 лет. Сейчас делаю продукты с помощью вайбкодинга: быстро, аккуратно, с работающим результатом. Один исполнитель — меньше поводов для головной боли.</p>
+    <a class="cta" href="https://t.me/shilovmedia" target="_blank">Обсудить задачу в Телеграме →</a>
+  </div>
+
+  <!-- Layout -->
+  <div class="layout">
+
+    <div class="main">
+
+      <!-- Services -->
+      <div class="box" id="services">
+        <div class="box-head">Услуги <span class="badge">под ключ</span></div>
+        <div class="box-body">
+          <div class="svc-grid">
+
+            <div class="svc">
+              <h4>Вайбкодинг под ключ</h4>
+              <p>Превращаю идею в работающий продукт с помощью нейросетей и современных инструментов.</p>
+              <ul>
+                <li>Лендинги и сайты-визитки</li>
+                <li>MVP и прототипы для стартапов</li>
+                <li>Доработка «зависших» проектов</li>
+                <li>Автоматизация рутины</li>
+              </ul>
+            </div>
+
+            <div class="svc">
+              <h4>Телеграм-боты</h4>
+              <p>Боты для бизнеса и внутренних задач. От простых сценариев до сложной логики.</p>
+              <ul>
+                <li>Запись клиентов и приём заявок</li>
+                <li>Магазины и оплата внутри бота</li>
+                <li>Уведомления, рассылки, CRM</li>
+                <li>Админ-панель для управления</li>
+              </ul>
+            </div>
+
+            <div class="svc">
+              <h4>Интеграция нейросетей</h4>
+              <p>Встраиваю ИИ в ваши процессы — не хайп ради хайпа, а реальная экономия времени.</p>
+              <ul>
+                <li>Чат-боты поддержки на GPT / Claude</li>
+                <li>RAG-системы по вашей базе знаний</li>
+                <li>Обработка документов и заявок</li>
+                <li>Генерация текстов, картинок, озвучки</li>
+              </ul>
+            </div>
+
+            <div class="svc">
+              <h4>Обучение и консультации</h4>
+              <p>Научу делать то же самое самостоятельно. Без воды, на ваших задачах.</p>
+              <ul>
+                <li>Индивидуальное обучение вайбкодингу</li>
+                <li>Консультация по ИИ-инструментам</li>
+                <li>Аудит существующего проекта</li>
+                <li>Разбор архитектуры и стека</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Prices -->
+      <div class="box" id="prices">
+        <div class="box-head">Стоимость <span class="badge">актуально</span></div>
+        <div class="box-body">
+          <table class="prices">
+            <tr>
+              <th>Услуга</th>
+              <th style="text-align:right;">Стоимость</th>
+            </tr>
+            <tr>
+              <td>Лендинг под ключ</td>
+              <td class="price">от 15 000 ₽</td>
+            </tr>
+            <tr>
+              <td>Телеграм-бот (простой сценарий)</td>
+              <td class="price">от 10 000 ₽</td>
+            </tr>
+            <tr>
+              <td>Телеграм-бот с нейросетью</td>
+              <td class="price">от 25 000 ₽</td>
+            </tr>
+            <tr>
+              <td>MVP / прототип стартапа</td>
+              <td class="price">от 30 000 ₽</td>
+            </tr>
+            <tr>
+              <td>Интеграция нейросети в бизнес</td>
+              <td class="price">от 20 000 ₽</td>
+            </tr>
+            <tr>
+              <td>Консультация (60 минут)</td>
+              <td class="price">2 000 ₽</td>
+            </tr>
+            <tr>
+              <td>Обучение вайбкодингу (курс)</td>
+              <td class="price">25 000 ₽</td>
+            </tr>
+          </table>
+          <p class="price-note">
+            Точная стоимость — после короткого обсуждения задачи. Оплата: на карту, по счёту, самозанятый. Работаю по договору или по счёту через самозанятость. Сроки обсуждаются индивидуально и фиксируются в начале работы.
+          </p>
+        </div>
+      </div>
+
+      <!-- Portfolio -->
+      <div class="box" id="portfolio">
+        <div class="box-head">Избранные работы</div>
+        <div class="box-body">
+
+          <div class="port-item">
+            <div class="port-icon">БОТ</div>
+            <div class="port-body">
+              <h5>Телеграм-бот для салона красоты</h5>
+              <p>Запись клиентов, ответы на частые вопросы через нейросеть, напоминания, интеграция с Google-календарём. Салон в Мытищах.</p>
+              <div class="meta">2026 · Python, Aiogram, OpenAI API · 11 дней</div>
+            </div>
+          </div>
+
+          <div class="port-item">
+            <div class="port-icon">MVP</div>
+            <div class="port-body">
+              <h5>MVP сервиса доставки</h5>
+              <p>Прототип веб-приложения с корзиной, оформлением заказа и админ-панелью. От идеи до рабочего прототипа за неделю.</p>
+              <div class="meta">2026 · Next.js, Supabase · 6 дней</div>
+            </div>
+          </div>
+
+          <div class="port-item">
+            <div class="port-icon">ИИ</div>
+            <div class="port-body">
+              <h5>Автоматизация обработки заявок</h5>
+              <p>Нейросеть разбирает входящие письма и заявки, распределяет по категориям, заполняет CRM. Экономия — около 20 часов в неделю.</p>
+              <div class="meta">2026 · n8n, Claude API, Bitrix24 · 9 дней</div>
+            </div>
+          </div>
+
+          <div class="port-item">
+            <div class="port-icon">САЙТ</div>
+            <div class="port-body">
+              <h5>Лендинг для локальной студии</h5>
+              <p>Сайт-визитка с формой заявки и телеграм-интеграцией. Клиент получает уведомления в телегу, а не «письмом на почту, которое никто не читает».</p>
+              <div class="meta">2026 · HTML/CSS, Vercel · 2 дня</div>
+            </div>
+          </div>
+
+          <p style="margin:12px 0 0 0; font-size:13px;">
+            Больше кейсов и подробностей — в телеграм-канале. <a href="https://t.me/shilovmedia" target="_blank">Подписаться →</a>
+          </p>
+
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="box" id="about">
+        <div class="box-head">Обо мне</div>
+        <div class="box-body about-text">
+          <p>Меня зовут <b>Шилов</b>. Мне 50 лет, живу в Подмосковье. В IT с конца 1990-х: начинал с системного администрирования, прошёл через веб-студии и корпоративную разработку. Сейчас занимаюсь вайбкодингом — разработкой продуктов с активным использованием нейросетей.</p>
+          <p>Работаю сам, без «команды из 10 человек» и менеджеров-посредников. Это значит: вы общаетесь напрямую с тем, кто делает. Быстрее решения, меньше согласований, честные сроки. Если задача мне не по силам — скажу прямо, без «сейчас подумаю и вернусь».</p>
+          <p>Беру как небольшие проекты (лендинг, бот, доработка), так и более серьёзные — MVP, интеграции, автоматизацию процессов.</p>
+
+          <div class="about-facts">
+            <div class="fact">
+              <div class="num">25+</div>
+              <div class="lbl">лет в IT</div>
+            </div>
+            <div class="fact">
+              <div class="num">40+</div>
+              <div class="lbl">проектов</div>
+            </div>
+            <div class="fact">
+              <div class="num">1</div>
+              <div class="lbl">исполнитель</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div class="side">
+
+      <!-- Telegram -->
+      <div class="box">
+        <div class="box-head">Телеграм-канал</div>
+        <div class="box-body" style="padding:14px;">
+          <div class="tg-card">
+            <h3>@shilovmedia</h3>
+            <p>Кейсы, разборы, инструменты и просто живое общение. Здесь быстрее всего отвечу.</p>
+            <a class="tg-btn" href="https://t.me/shilovmedia" target="_blank">Подписаться</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contacts -->
+      <div class="box" id="contacts">
+        <div class="box-head">Контакты</div>
+        <div class="box-body" style="padding:10px 14px;">
+          <div class="contacts-list">
+            <div>
+              <div class="lbl">Телеграм (основной)</div>
+              <div class="val"><a href="https://t.me/shilovmedia" target="_blank">@shilovmedia</a></div>
+            </div>
+            <div>
+              <div class="lbl">Локация</div>
+              <div class="val">Подмосковье, удалённо</div>
+            </div>
+            <div>
+              <div class="lbl">Режим работы</div>
+              <div class="val">Пн–Пт, 10:00–19:00 МСК</div>
+            </div>
+            <div>
+              <div class="lbl">Оплата</div>
+              <div class="val">Карта / счёт / самозанятый</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="box">
+        <div class="box-head">Статус</div>
+        <div class="box-body" style="padding:12px 14px; font-size:13px;">
+          <p style="margin:0 0 6px 0;"><b style="color:#2e8b57;">● Открыт к заказам</b></p>
+          <p style="margin:0; color:#555;">Свободен один слот на декабрь. Пишите — обсудим.</p>
+        </div>
+      </div>
+
+      <!-- Trust -->
+      <div class="box">
+        <div class="box-head">Почему со мной удобно</div>
+        <div class="box-body" style="padding:12px 14px; font-size:13px;">
+          <p style="margin:0 0 8px 0;">✓ Общение напрямую с исполнителем</p>
+          <p style="margin:0 0 8px 0;">✓ Фиксированная смета и сроки</p>
+          <p style="margin:0 0 8px 0;">✓ Работа по договору / счёту</p>
+          <p style="margin:0 0 8px 0;">✓ Отвечаю в тот же день</p>
+          <p style="margin:0;">✓ Никаких «доработаем потом за доплату»</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="wrap">
+    <div>
+      <b>© 2003–2026 Шилов Медиа</b><br>
+      Вайбкодинг, нейросети, телеграм-боты. Подмосковье.
+    </div>
+    <div style="text-align:right;">
+      <a href="https://t.me/shilovmedia" target="_blank">@shilovmedia</a> ·
+      <a href="#services">наверх ↑</a><br>
+      <span style="font-size:11px; color:#5a6f8f;">Сделано на чистом HTML. Хостинг: Vercel.</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
