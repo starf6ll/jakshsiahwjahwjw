@@ -1,110 +1,607 @@
-// api/chat.js — Vercel Edge Function
-// Проксирует запросы к https://api.etage.one/v1/chat/completions
-// Ключ API хранится в переменной окружения ETAGE_API_KEY (НЕ во фронтенде)
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Шилов Медиа — вайбкодинг и нейросети под ключ</title>
+<meta name="description" content="Сайты, телеграм-боты, интеграция нейросетей. 25 лет в IT, Подмосковье. Работаю сам, без бюрократии.">
 
-export const config = { runtime: 'edge' };
+<!-- KaTeX (формулы) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"
+  onload="window.__katexReady=true"></script>
 
-const UPSTREAM_URL = 'https://api.etage.one/v1/chat/completions';
+<!-- highlight.js (подсветка кода) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
 
-export default async function handler(req) {
-  // CORS (на случай если фронт и API на разных поддоменах)
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+<!-- marked (Markdown) -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+  :root {
+    --bg: #0a0e17;
+    --bg-soft: #111827;
+    --panel: #161e2e;
+    --border: #243044;
+    --text: #e5eaf3;
+    --text-dim: #94a3b8;
+    --accent: #3b82f6;
+    --accent-2: #8b5cf6;
+    --green: #10b981;
+    --radius: 14px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   }
 
-  if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
   }
 
-  let body;
-  try {
-    body = await req.json();
-  } catch (e) {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* ===== NAV ===== */
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,14,23,0.85);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav .container { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .logo { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; color: var(--text); }
+  .logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 24px; font-size: 14px; }
+  .nav-links a { color: var(--text-dim); font-weight: 500; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+  .nav-cta {
+    background: var(--accent); color: #fff; padding: 8px 16px;
+    border-radius: 8px; font-weight: 600; font-size: 13px;
+    transition: background .2s;
+  }
+  .nav-cta:hover { background: #2563eb; text-decoration: none; }
+
+  /* ===== HERO ===== */
+  .hero { padding: 80px 0 60px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before {
+    content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 800; letter-spacing: -1.5px; line-height: 1.15;
+    max-width: 800px; margin: 0 auto 16px;
+  }
+  .hero h1 .grad {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p { color: var(--text-dim); font-size: 17px; max-width: 620px; margin: 0 auto 28px; }
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border-radius: 10px; font-weight: 600; font-size: 14px;
+    border: 1px solid transparent; cursor: pointer; transition: all .2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #2563eb; text-decoration: none; }
+  .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+  .btn-ghost:hover { border-color: var(--text-dim); text-decoration: none; }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 60px 0; }
+  .section-title {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px;
+  }
+  .section-sub { color: var(--text-dim); margin-bottom: 32px; max-width: 560px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    transition: border-color .2s, transform .2s;
+  }
+  .card:hover { border-color: #2f3f5a; }
+  .card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(59,130,246,0.12); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; margin-bottom: 14px;
+  }
+  .card h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .card p { color: var(--text-dim); font-size: 14px; margin-bottom: 10px; }
+  .card ul { color: var(--text-dim); font-size: 13px; padding-left: 18px; }
+  .card ul li { margin-bottom: 3px; }
+
+  /* ===== PRICES ===== */
+  .price-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .price-table th {
+    text-align: left; padding: 12px 16px; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .price-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .price-table tr:last-child td { border-bottom: none; }
+  .price-table td:last-child { text-align: right; font-weight: 700; white-space: nowrap; }
+  .price-table .note { color: var(--text-dim); font-size: 13px; padding-top: 16px; border: none; }
+
+  /* ===== CHAT ===== */
+  .chat-section {
+    background: var(--bg-soft);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .chat-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: 620px;
+  }
+  .chat-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--panel);
+  }
+  .chat-header .title { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .chat-header .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 8px var(--green);
+  }
+  .chat-header .model { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
+
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 20px;
+    display: flex; flex-direction: column; gap: 16px;
+    scroll-behavior: smooth;
+  }
+  .msg { display: flex; gap: 12px; max-width: 100%; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .msg-avatar {
+    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .msg.user .msg-avatar { background: var(--accent); color: #fff; }
+  .msg.assistant .msg-avatar { background: var(--accent-2); color: #fff; }
+  .msg-body {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 16px;
+    font-size: 14px; line-height: 1.65;
+    overflow-x: auto; max-width: 100%;
+  }
+  .msg.user .msg-body { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.25); }
+
+  /* Markdown внутри чата */
+  .msg-body h1, .msg-body h2, .msg-body h3, .msg-body h4 {
+    margin: 14px 0 6px; font-weight: 700; line-height: 1.3;
+  }
+  .msg-body h1 { font-size: 18px; }
+  .msg-body h2 { font-size: 16px; }
+  .msg-body h3 { font-size: 15px; }
+  .msg-body h4 { font-size: 14px; }
+  .msg-body p { margin: 8px 0; }
+  .msg-body p:first-child { margin-top: 0; }
+  .msg-body p:last-child { margin-bottom: 0; }
+  .msg-body ul, .msg-body ol { margin: 8px 0; padding-left: 22px; }
+  .msg-body li { margin-bottom: 4px; }
+  .msg-body blockquote {
+    border-left: 3px solid var(--accent); margin: 10px 0;
+    padding: 4px 14px; color: var(--text-dim); background: rgba(59,130,246,0.05);
+    border-radius: 0 6px 6px 0;
+  }
+  .msg-body code {
+    font-family: var(--mono); font-size: 12.5px;
+    background: #1e293b; padding: 2px 6px; border-radius: 4px;
+    color: #e2e8f0;
+  }
+  .msg-body pre {
+    background: #0f172a; border: 1px solid #1e293b;
+    border-radius: 8px; padding: 14px; margin: 10px 0;
+    overflow-x: auto;
+  }
+  .msg-body pre code { background: none; padding: 0; font-size: 12.5px; }
+  .msg-body table {
+    border-collapse: collapse; margin: 10px 0; width: 100%; font-size: 13px;
+  }
+  .msg-body th, .msg-body td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+  .msg-body th { background: #1e293b; font-weight: 700; }
+  .msg-body hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+  .msg-body a { color: var(--accent); }
+
+  .chat-input-wrap {
+    padding: 16px 20px; border-top: 1px solid var(--border);
+    background: var(--panel); display: flex; gap: 10px;
+  }
+  .chat-input {
+    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; color: var(--text);
+    font-family: var(--font); font-size: 14px; outline: none;
+    transition: border-color .2s; resize: none;
+    min-height: 46px; max-height: 120px;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-send {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; padding: 0 20px; font-weight: 600;
+    font-size: 14px; cursor: pointer; transition: background .2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .chat-send:hover { background: #2563eb; }
+  .chat-send:disabled { opacity: .5; cursor: not-allowed; }
+
+  .typing { display: flex; gap: 4px; padding: 4px 0; }
+  .typing span {
+    width: 7px; height: 7px; background: var(--text-dim);
+    border-radius: 50%; animation: bounce 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: .15s; }
+  .typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+
+  .chat-hint { font-size: 12px; color: var(--text-dim); text-align: center; padding: 0 20px 12px; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    padding: 40px 0; border-top: 1px solid var(--border);
+    color: var(--text-dim); font-size: 13px;
+  }
+  .footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+  .footer a { color: var(--text-dim); }
+  .footer a:hover { color: var(--text); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .hero { padding: 50px 0 40px; }
+    .chat-box { height: 540px; }
+    .msg-body { padding: 10px 12px; }
+    .footer .container { flex-direction: column; }
   }
 
-  const messages = Array.isArray(body.messages) ? body.messages : [];
-  if (messages.length === 0) {
-    return new Response(JSON.stringify({ error: 'messages array required' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  /* Кнопка-ссылка на чат в hero */
+  .scroll-hint { margin-top: 40px; font-size: 13px; color: var(--text-dim); }
+  .scroll-hint a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav class="nav">
+  <div class="container">
+    <div class="logo">ШИЛОВ<span>.</span>MEDIA</div>
+    <div class="nav-links">
+      <a href="#services">Услуги</a>
+      <a href="#prices">Цены</a>
+      <a href="#chat">ИИ-чат</a>
+      <a href="#about">Обо мне</a>
+    </div>
+    <a class="nav-cta" href="https://t.me/shilovmedia" target="_blank">@shilovmedia</a>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="container">
+    <h1>Сайты, боты и нейросети <span class="grad">под ключ</span><br>без бюрократии и раздутых смет</h1>
+    <p>Мне 50 лет, я из Подмосковья, в IT больше 25 лет. Делаю продукты с помощью вайбкодинга: быстро, аккуратно, с работающим результатом. Один исполнитель — меньше головной боли.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#chat">Попробовать ИИ-консультанта →</a>
+      <a class="btn btn-ghost" href="https://t.me/shilovmedia" target="_blank">Написать в Telegram</a>
+    </div>
+    <div class="scroll-hint">Или сразу <a href="#prices">посмотреть цены</a></div>
+  </div>
+</header>
+
+<!-- ===== SERVICES ===== -->
+<section id="services">
+  <div class="container">
+    <div class="section-title">Услуги</div>
+    <div class="section-sub">От идеи до работающего продукта. Без посредников и «команды из 10 человек».</div>
+    <div class="grid-2">
+
+      <div class="card">
+        <div class="card-icon">01</div>
+        <h3>Вайбкодинг под ключ</h3>
+        <p>Превращаю идею в работающий продукт с помощью нейросетей и современных инструментов.</p>
+        <ul>
+          <li>Лендинги и сайты-визитки</li>
+          <li>MVP и прототипы стартапов</li>
+          <li>Доработка «зависших» проектов</li>
+          <li>Автоматизация рутины</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">02</div>
+        <h3>Телеграм-боты</h3>
+        <p>Боты для бизнеса и внутренних задач. От простых сценариев до сложной логики.</p>
+        <ul>
+          <li>Запись клиентов и приём заявок</li>
+          <li>Магазины и оплата внутри бота</li>
+          <li>Уведомления, рассылки, CRM</li>
+          <li>Админ-панель для управления</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">03</div>
+        <h3>Интеграция нейросетей</h3>
+        <p>Встраиваю ИИ в ваши процессы — реальная экономия времени, а не хайп ради хайпа.</p>
+        <ul>
+          <li>Чат-боты поддержки на GPT / Claude</li>
+          <li>RAG-системы по базе знаний</li>
+          <li>Обработка документов и заявок</li>
+          <li>Генерация контента</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">04</div>
+        <h3>Обучение и консультации</h3>
+        <p>Научу делать то же самое самостоятельно. Без воды, на ваших задачах.</p>
+        <ul>
+          <li>Индивидуальное обучение вайбкодингу</li>
+          <li>Консультация по ИИ-инструментам</li>
+          <li>Аудит существующего проекта</li>
+          <li>Разбор архитектуры и стека</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICES ===== -->
+<section id="prices" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div class="section-title">Стоимость</div>
+    <div class="section-sub">Точная цена — после короткого обсуждения задачи. Оплата: карта / счёт / самозанятый.</div>
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <table class="price-table">
+        <tr><th>Услуга</th><th style="text-align:right;">Стоимость</th></tr>
+        <tr><td>Лендинг под ключ</td><td>от 15 000 ₽</td></tr>
+        <tr><td>Телеграм-бот (простой сценарий)</td><td>от 10 000 ₽</td></tr>
+        <tr><td>Телеграм-бот с нейросетью</td><td>от 25 000 ₽</td></tr>
+        <tr><td>MVP / прототип стартапа</td><td>от 30 000 ₽</td></tr>
+        <tr><td>Интеграция нейросети в бизнес</td><td>от 20 000 ₽</td></tr>
+        <tr><td>Консультация (60 минут)</td><td>2 000 ₽</td></tr>
+        <tr><td>Обучение вайбкодингу (курс)</td><td>25 000 ₽</td></tr>
+        <tr><td colspan="2" class="note">Сроки обсуждаются индивидуально и фиксируются в начале работы.</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CHAT ===== -->
+<section id="chat" class="chat-section">
+  <div class="container">
+    <div class="section-title">ИИ-консультант</div>
+    <div class="section-sub">Задайте вопрос о вайбкодинге, нейросетях или моих услугах. Отвечает модель glm-5.2. Поддерживает Markdown, формулы и код.</div>
+
+    <div class="chat-box">
+      <div class="chat-header">
+        <div class="title"><span class="dot"></span> Шилов AI</div>
+        <div class="model">glm-5.2 · text only</div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg assistant">
+          <div class="msg-avatar">AI</div>
+          <div class="msg-body">
+            <p>Привет! Я ИИ-консультант Шилов Медиа. Спросите про вайбкодинг, нейросети, сроки или цены. Я умею отвечать с <strong>Markdown</strong>, формулами и кодом.</p>
+            <p>Например: <em>«Сколько стоит телеграм-бот с нейросетью?»</em> или <em>«Что такое RAG?»</em></p>
+          </div>
+        </div>
+      </div>
+
+      <form class="chat-input-wrap" id="chatForm">
+        <textarea class="chat-input" id="chatInput" placeholder="Напишите сообщение..." rows="1"></textarea>
+        <button type="submit" class="chat-send" id="chatSend">Отправить</button>
+      </form>
+      <div class="chat-hint">Enter — отправить · Shift+Enter — новая строка · Модель: glm-5.2</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about">
+  <div class="container">
+    <div class="section-title">Обо мне</div>
+    <div class="section-sub">Шилов. 50 лет. Подмосковье. В IT с конца 1990-х.</div>
+    <div class="card">
+      <p style="margin-bottom: 12px;">Начинал с системного администрирования, прошёл через веб-студии и корпоративную разработку. Сейчас занимаюсь <strong>вайбкодингом</strong> — разработкой продуктов с активным использованием нейросетей.</p>
+      <p style="color: var(--text-dim);">Работаю сам, без «команды из 10 человек» и менеджеров-посредников. Вы общаетесь напрямую с тем, кто делает. Быстрее решения, меньше согласований, честные сроки. Если задача мне не по силам — скажу прямо.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <div>
+      <strong style="color: var(--text);">© 2026 Шилов Медиа</strong><br>
+      Вайбкодинг · Нейросети · Телеграм-боты<br>
+      Подмосковье, работаю удалённо
+    </div>
+    <div style="text-align:right;">
+      <a href="https://t.me/shilovmedia" target="_blank">@shilovmedia</a><br>
+      <a href="#chat">ИИ-чат</a> · <a href="#services">наверх ↑</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ===== Markdown =====
+  marked.setOptions({
+    gfm: true,
+    breaks: true,
+    highlight: function (code, lang) {
+      if (window.hljs && lang && hljs.getLanguage(lang)) {
+        try { return hljs.highlight(code, { language: lang }).value; } catch (e) {}
+      }
+      return code;
+    }
+  });
+
+  function renderMarkdown(text) {
+    let html = marked.parse(text);
+    return html;
   }
 
-  const apiKey = process.env.ETAGE_API_KEY;
-  if (!apiKey) {
-    return new Response(
-      JSON.stringify({ error: 'Server misconfiguration: ETAGE_API_KEY not set' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+  function renderMath(el) {
+    if (!window.renderMathInElement) return;
+    try {
+      renderMathInElement(el, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '$', right: '$', display: false },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    } catch (e) {}
   }
 
-  // Системный промпт — чтобы чат не уходил в сторону
-  const systemPrompt =
-    'Ты — ИИ-консультант сайта "Шилов Медиа". Отвечай на русском языке, ' +
-    'кратко и по делу. Ты помогаешь с вопросами о вайбкодинге, нейросетях, ' +
-    'разработке сайтов, телеграм-ботах, ценах и услугах. Если спрашивают о ' +
-    'цене — ориентируйся на: лендинг от 15 000 ₽, телеграм-бот от 10 000 ₽, ' +
-    'бот с нейросетью от 25 000 ₽, MVP от 30 000 ₽, интеграция ИИ от 20 000 ₽, ' +
-    'консультация 2 000 ₽/час. Если задача сложная или нужен точный расчёт — ' +
-    'предложи написать в Telegram @shilovmedia. Можешь использовать Markdown, ' +
-    'таблицы, формулы и код, если это уместно. Не выдумывай факты о компании, ' +
-    'которых не знаешь.';
+  // ===== Chat =====
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('chatSend');
+  const messagesEl = document.getElementById('chatMessages');
 
-  const payload = {
-    model: 'glm-5.2',
-    messages: [{ role: 'system', content: systemPrompt }, ...messages],
-    temperature: 0.7,
-    max_tokens: 2048,
-    stream: false, // упрощаем: без стриминга на клиенте, но можно включить
-    // enable_thinking: false, // если нужно отключить режим размышления
-  };
+  let history = [];
+  let busy = false;
 
-  try {
-    const upstream = await fetch(UPSTREAM_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + apiKey,
-      },
-      body: JSON.stringify(payload),
-    });
+  function addMessage(role, content) {
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
 
-    if (!upstream.ok) {
-      const errText = await upstream.text().catch(() => '');
-      return new Response(
-        JSON.stringify({ error: 'Upstream error', status: upstream.status, details: errText }),
-        { status: 502, headers: { 'Content-Type': 'application/json' } }
-      );
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = role === 'user' ? 'Вы' : 'AI';
+
+    const body = document.createElement('div');
+    body.className = 'msg-body';
+
+    if (role === 'assistant') {
+      body.innerHTML = renderMarkdown(content);
+      renderMath(body);
+      body.querySelectorAll('pre code').forEach(function (b) {
+        if (window.hljs) hljs.highlightElement(b);
+      });
+    } else {
+      body.textContent = content;
     }
 
-    const data = await upstream.json();
-    const content =
-      data?.choices?.[0]?.message?.content ??
-      data?.choices?.[0]?.text ??
-      '';
-
-    return new Response(JSON.stringify({ content }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ error: 'Network error', details: String(err) }),
-      { status: 502, headers: { 'Content-Type': 'application/json' } }
-    );
+    div.appendChild(avatar);
+    div.appendChild(body);
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return body;
   }
-}
+
+  function addTyping() {
+    const div = document.createElement('div');
+    div.className = 'msg assistant';
+    div.id = 'typingIndicator';
+    div.innerHTML =
+      '<div class="msg-avatar">AI</div>' +
+      '<div class="msg-body"><div class="typing"><span></span><span></span><span></span></div></div>';
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typingIndicator');
+    if (el) el.remove();
+  }
+
+  async function sendMessage(text) {
+    if (busy || !text.trim()) return;
+    busy = true;
+    sendBtn.disabled = true;
+
+    addMessage('user', text);
+    history.push({ role: 'user', content: text });
+
+    input.value = '';
+    input.style.height = 'auto';
+    addTyping();
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(function () { return ''; });
+        throw new Error('HTTP ' + res.status + ' ' + errText);
+      }
+
+      const data = await res.json();
+      const reply = data.content || '(пустой ответ)';
+
+      removeTyping();
+      addMessage('assistant', reply);
+      history.push({ role: 'assistant', content: reply });
+    } catch (err) {
+      removeTyping();
+      addMessage('assistant', '⚠️ Не удалось получить ответ. Попробуйте ещё раз или напишите напрямую в Telegram: @shilovmedia\n\n`' + String(err.message).replace(/`/g, '') + '`');
+    } finally {
+      busy = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    sendMessage(input.value);
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(input.value);
+    }
+  });
+
+  input.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  // Фокус на чат при переходе по ссылке
+  if (location.hash === '#chat') {
+    setTimeout(function () { input.focus(); }, 300);
+  }
+})();
+</script>
+</body>
+</html>
